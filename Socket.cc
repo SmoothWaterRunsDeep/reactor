@@ -18,7 +18,7 @@ Socket::Socket(int fd)
 
 
 /*用于获取套接字的文件描述符*/
-int Socket::getfd(){
+int Socket::getfd()const{
     return _fd;
 }
 

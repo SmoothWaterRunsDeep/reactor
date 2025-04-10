@@ -1,5 +1,8 @@
 #include"TcpConnection.h"
 #include<sstream>
+#include<iostream>
+using namespace std;
+
 
 TcpConnection::TcpConnection(int connfd)
     :_fd(connfd)
@@ -51,3 +54,65 @@ string TcpConnection::toString(){
         <<_peeraddr.getip()<<":"<<_peeraddr.getport()<<endl;
     return ss.str();
 }
+
+
+bool TcpConnection::isClosed()const{
+    char buf[20]={0};
+    int ret=::recv(_fd.getfd(),buf,sizeof(buf),MSG_PEEK);//这里必须在recv前加上限定符表示调用全局上的recv函数，因为我前面好像有和recv重名的函数
+    return (0==ret);
+}
+
+//回调函数的注册
+void TcpConnection::SetNewConnectionCallback(const TcpConnectionCallback& cb){
+    _onConnection=cb;
+}
+
+void TcpConnection::SetMessageCallback(const TcpConnectionCallback&cb){
+    _onMessage=cb;
+}
+
+void TcpConnection::SetCloseCallback(const TcpConnectionCallback &cb){
+    _onClose=cb;
+}
+
+
+//回调函数的执行
+void TcpConnection::handleNewConnectionCallback(){
+    if(_onConnection){
+        _onConnection(shared_from_this());
+    }
+    else{
+        cout<<"no connection has been established"<<endl;
+    }
+}
+
+
+void TcpConnection::handleMessageCallback(){
+    if(_onMessage){
+        _onMessage(shared_from_this());
+    }
+    else{
+        cout<<"no message has been sent"<<endl;
+    }
+}
+
+void TcpConnection::handleCloseCallback(){
+    if(_onClose){
+        _onClose(shared_from_this());
+    }
+    else{
+        cout<<"no tcp can be closed"<<endl;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+

@@ -22,7 +22,7 @@ public:
     Socket();
     Socket(int);
     ~Socket(); 
-    int getfd();
+    int getfd()const;
     void shut_write();
 private:
 int _fd;
