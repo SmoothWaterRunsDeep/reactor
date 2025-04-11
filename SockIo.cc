@@ -37,11 +37,12 @@ int SockIo::readn(char*buf,int len){
 
         else{//这种情况表示可以继续正常读取
             ptr+=ret;//当前读取位置前移ret个字节
-            len-=ret;//剩余待读取字节数减少ret个字节
+            left-=ret;//剩余待读取字节数减少ret个字节
+            
         }
 
     }
-
+return len-left;
 }
 
 /*readn 函数主要用于读取指定长度的数据，不关注数据是否为字符串，因此不需要预留 '\0' 的空间；
@@ -56,7 +57,7 @@ int SockIo::readLine(char*buf,int len){
 
     //使用 recv 函数的 MSG_PEEK 标志，我们可以先查看内核缓冲区中的数据，判断是否包含换行符，然后再决定读取多少数据。    
     while(left>0){
-        ret=recv(_fd,ptr,left,0);
+        ret=recv(_fd,ptr,left,MSG_PEEK);//注意这里必须是拷贝，不能直接把数据从内核移走
         if(ret<0&&errno==EINTR){    //如果是发生了中断，则继续进行循环
             continue;
         }
@@ -74,7 +75,7 @@ int SockIo::readLine(char*buf,int len){
                     readn(buf,i+1);
                     total=i+1;
                     ptr[i+1]='\0';
-                    return total+i+1;
+                    return total;
                 }
             }
             readn(ptr,ret);//如果在这一次读取中没有读到换行符

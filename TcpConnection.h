@@ -8,10 +8,10 @@
 class SockIo;//前向声明SockIo类
 
 class TcpConnection
-:enable_shared_from_this<TcpConnection>//shared_from_this() 返回的是指向当前对象的shared_ptr，并且共享引用计数，这样能避免多个指针独立管理同一片空间
+:public enable_shared_from_this<TcpConnection>//shared_from_this() 返回的是指向当前对象的shared_ptr，并且共享引用计数，这样能避免多个指针独立管理同一片空间
 {
 
-    using TcpConnectionPtr=shared_ptr<TcpConnection>;
+    using TcpConnectionPtr=shared_ptr<TcpConnection>;//这个声明不能拿到前面去，因为你放到前面的话看不到TcpConnection的定义会发生报错
     using TcpConnectionCallback=function<void(const TcpConnectionPtr &)>;
 
 public:
@@ -52,9 +52,9 @@ private:
 
 public:
     //回调函数的注册
-    void SetNewConnectionCallback(const TcpConnectionCallback&);
-    void SetMessageCallback(const TcpConnectionCallback&);
-    void SetCloseCallback(const TcpConnectionCallback&);
+    void SetNewConnectionCallback(TcpConnectionCallback&&);
+    void SetMessageCallback(TcpConnectionCallback&&);
+    void SetCloseCallback(TcpConnectionCallback&&);
 
     //回调函数的执行
     void handleNewConnectionCallback();

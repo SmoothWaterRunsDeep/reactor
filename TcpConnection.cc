@@ -1,6 +1,7 @@
 #include"TcpConnection.h"
 #include<sstream>
 #include<iostream>
+#include<memory>
 using namespace std;
 
 
@@ -30,7 +31,6 @@ InetAddr TcpConnection::getLocaladdr(){
     int ret=getsockname(_fd.getfd(),(struct sockaddr*)&addr,&len);
     if(ret<0){
         perror("getLocaladdr error");
-        _exit(-1);
     }
     return InetAddr(addr);
 }
@@ -51,7 +51,7 @@ string TcpConnection::toString(){
     stringstream ss;
     ss<<_localaddr.getip()<<":"<<_localaddr.getport()
         <<"----->"
-        <<_peeraddr.getip()<<":"<<_peeraddr.getport()<<endl;
+        <<_peeraddr.getip()<<":"<<_peeraddr.getport();
     return ss.str();
 }
 
@@ -63,16 +63,19 @@ bool TcpConnection::isClosed()const{
 }
 
 //回调函数的注册
-void TcpConnection::SetNewConnectionCallback(const TcpConnectionCallback& cb){
-    _onConnection=cb;
+/* void TcpConnection::SetNewConnectionCallback(const TcpConnectionCallback&& cb){一定要注意，这么写是错的，并且编译时无法发现 */
+void TcpConnection::SetNewConnectionCallback(TcpConnectionCallback&& cb){
+    _onConnection=move(cb);
 }
 
-void TcpConnection::SetMessageCallback(const TcpConnectionCallback&cb){
-    _onMessage=cb;
+/* void TcpConnection::SetMessageCallback(const TcpConnectionCallback&&cb){ */
+void TcpConnection::SetMessageCallback(TcpConnectionCallback&&cb){
+    _onMessage=move(cb);
 }
 
-void TcpConnection::SetCloseCallback(const TcpConnectionCallback &cb){
-    _onClose=cb;
+/* void TcpConnection::SetCloseCallback(const TcpConnectionCallback &&cb){ */
+void TcpConnection::SetCloseCallback(TcpConnectionCallback &&cb){
+    _onClose=move(cb);
 }
 
 

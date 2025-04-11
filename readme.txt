@@ -1,2 +1,10 @@
 这部分代码实现了一个初步的reactor服务器模型的功能，但是还没有写客户端部分的代码。这个可以用Linux的nc命令来测试TCP线路。开启服务器后，使用nc ip port命令即可
 另外V1也没有实现IO多路复用，所以在V2中我们应该把epoll再封装进去。
+
+v2:外部代码（例如服务器的业务逻辑部分）并不直接与 TcpConnection 交互，而是先将处理这三个事件的回调函数注册给 EventLoop。这是因为 EventLoop 负责整个事件循环，它掌控着新连接的接受、已有连接上数据的读写以及连接断开等操作的时机。
+EventLoop 先将这些回调函数保存起来，当 EventLoop 检测到有新的连接请求到来时，会创建一个 TcpConnection 对象来代表这个新的连接。然后，EventLoop 会把之前保存的三个回调函数注册到这个新创建的 TcpConnection 对象中。
+这里，EventLoop 起到了一个中介的作用，它将外部的回调函数传递给具体的 TcpConnection 对象，使得每个 TcpConnection 对象在相应事件发生时能够执行正确的处理逻辑。
+
+bug1：如果在连接过程中关于shared_from_this()报错了，可能是因为没有公有继承enabled_shared_from_this<TcpConnection>,因为类中默认私有继承。由于类中的函数的声明和定义是分开写的，在类外执行shared_from_this()函数将会报错。
+bug2：如果遇到服务器不能正常显示收到的数据可能是因为SockIo.cc中的read函数阻塞住了。注意在readLine函数中的recv函数的第四个参数一定要设置为MSG_PEEK。
+
