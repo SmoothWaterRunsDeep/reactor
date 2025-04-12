@@ -52,9 +52,9 @@ private:
 
 public:
     //回调函数的注册
-    void SetNewConnectionCallback(TcpConnectionCallback&&);
-    void SetMessageCallback(TcpConnectionCallback&&);
-    void SetCloseCallback(TcpConnectionCallback&&);
+    void SetNewConnectionCallback(const TcpConnectionCallback&);
+    void SetMessageCallback(const TcpConnectionCallback&);
+    void SetCloseCallback(const TcpConnectionCallback&);
 
     //回调函数的执行
     void handleNewConnectionCallback();

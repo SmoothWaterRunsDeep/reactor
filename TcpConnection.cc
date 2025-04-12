@@ -63,18 +63,20 @@ bool TcpConnection::isClosed()const{
 }
 
 //回调函数的注册
-/* void TcpConnection::SetNewConnectionCallback(const TcpConnectionCallback&& cb){一定要注意，这么写是错的，并且编译时无法发现 */
-void TcpConnection::SetNewConnectionCallback(TcpConnectionCallback&& cb){
+/* void TcpConnection::SetNewConnectionCallback(TcpConnectionCallback&& cb){一定要注意，这么写是错的，因为在执行第70行的时候会调用移动构造函数，
+ * 移动语义中会把cb的空间转交给_onConenction 但是这样会出现一个问题，那就是在第一个客户端连接后，EventLoop中的用于注册函数的数据成员会被置为nullptr，
+ * 这样的话就会造成第一个客户端可以正常连接但是后续的客户端连接就不能正常通信了。这里使用const左值引用的话由于const属性，在第70行执行的将是复制的赋值函数*/
+void TcpConnection::SetNewConnectionCallback(const TcpConnectionCallback& cb){
     _onConnection=move(cb);
 }
 
-/* void TcpConnection::SetMessageCallback(const TcpConnectionCallback&&cb){ */
-void TcpConnection::SetMessageCallback(TcpConnectionCallback&&cb){
+/* void TcpConnection::SetMessageCallback(TcpConnectionCallback&&cb){ */
+void TcpConnection::SetMessageCallback(const TcpConnectionCallback&cb){
     _onMessage=move(cb);
 }
 
-/* void TcpConnection::SetCloseCallback(const TcpConnectionCallback &&cb){ */
-void TcpConnection::SetCloseCallback(TcpConnectionCallback &&cb){
+/* void TcpConnection::SetCloseCallback(TcpConnectionCallback &&cb){ */
+void TcpConnection::SetCloseCallback(const TcpConnectionCallback &cb){
     _onClose=move(cb);
 }
 
