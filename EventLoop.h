@@ -17,7 +17,7 @@ class TcpConnection;
 
 
 using TcpConnectionPtr=shared_ptr<TcpConnection>;
-using TcpConnectionCallback=function<void(const TcpConnectionPtr&)>;//既防止更改，也防止拷贝
+using TcpConnectionCallback=function<void(const TcpConnectionPtr&)>;//防止移动构造函数把原地址的管理权转移，也可以防止拷贝提高效率
 class EventLoop
 {
 
