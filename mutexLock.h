@@ -18,7 +18,7 @@ private:
 };
 
 
-class MutexLockGuard//这个类是一个辅助类，是为了遵循RAII原则。因为互斥锁属于资源，为了确保锁的正确释放，防止死锁，需要对互斥锁的生命周期进行托管
+class MutexLockGuard//这个类是一个辅助类，遵循RAII原则。因为互斥锁属于资源，为了确保锁的正确释放，防止死锁.
 {
 public:
     MutexLockGuard(mutexLock& Mut)
