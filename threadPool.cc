@@ -1,8 +1,8 @@
-#include"threadpool.h"
+#include"threadPool.h"
 #include"thread.h"
 #include<unistd.h>
 
-threadpool::threadpool(size_t capacity,size_t maxsize)
+threadPool::threadPool(size_t capacity,size_t maxsize)
     :_maxsize(maxsize)
     ,_quesize(capacity)
     ,_taskQueue(capacity)
@@ -11,11 +11,11 @@ threadpool::threadpool(size_t capacity,size_t maxsize)
     _threads.resize(_maxsize);//这里不适用这句话也没关系，因为即使vector发生扩容，使用的也是unique_ptr的移动构造函数 
 }
 
-threadpool::~threadpool(){}
+threadPool::~threadPool(){}
 
-void threadpool::start(){
+void threadPool::start(){
     for(int i=0;i<_maxsize;++i){
-        unique_ptr<thread>tmp(new thread(bind(&threadpool::doTask,this)));//std::bind(&ThreadPool::doTask, this) 返回的是一个未指定具体类型的可调用对象，
+        unique_ptr<thread>tmp(new thread(bind(&threadPool::doTask,this)));//std::bind(&threadPool::doTask, this) 返回的是一个未指定具体类型的可调用对象，
         //它能隐式转换为 std::function<void()> 类型
         _threads.push_back(move(tmp));//unique_ptr独占所有权，不能被复制，所以这里必须要进行右值转换实现移动语义（vector的移动构造函数）转交所有权
     }
@@ -27,7 +27,7 @@ void threadpool::start(){
     }
 }
 
-void threadpool::stop(){
+void threadPool::stop(){
     while(!_taskQueue.isempty()){
         sleep(1);       //只要任务队列中还有任务就不能stop线程池
     }
@@ -40,18 +40,18 @@ void threadpool::stop(){
     }
 }
 
-void threadpool::addTask(task&&cb){//使用右值引用避免不必要的拷贝
+void threadPool::addTask(task&&cb){//使用右值引用避免不必要的拷贝
     if(cb){
         _taskQueue.push(move(cb));
     }
 }
 
 
-task threadpool::getTask(){
+task threadPool::getTask(){
     return _taskQueue.pop();
 }
 
-void threadpool::doTask(){
+void threadPool::doTask(){
     while(!_exit){
         task Task=getTask();
         if(Task){

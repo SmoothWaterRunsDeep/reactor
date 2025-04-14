@@ -3,8 +3,7 @@
 #include"TcpConnection.h"
 #include<iostream>
 #include<sys/epoll.h>
-
-
+#include"sys/eventfd.h"
 
 using namespace std;
 
@@ -84,7 +83,6 @@ void EventLoop::handleNewConnection(){
     TcpConnectionPtr con(new TcpConnection(connfd));//每当有connfd成功返回就意味着有tcp连接成功建立
 
     //has[connfd]=con;//如果键不存在，会先创建一个默认构造的对象，然后再进行赋值操作,会带来额外的开销。
-    /* has.insert(make_pair(connfd,con));//不会进行不必要的查找和可能的覆盖操作 */
     /*每当有连接建立就应该注册tcp的三个半事件*/
     con->SetNewConnectionCallback(move(_onConnection));
     con->SetMessageCallback(move(_onMessage));
@@ -93,7 +91,7 @@ void EventLoop::handleNewConnection(){
     //has[connfd]=con;//如果键不存在，会先创建一个默认构造的对象，然后再进行赋值操作,会带来额外的开销。
     has.insert(make_pair(connfd,con));//不会进行不必要的查找和可能的覆盖操作
     if(con)
-    con->handleNewConnectionCallback();//执行连接建立事件的回调函数
+        con->handleNewConnectionCallback();//执行连接建立事件的回调函数
     else{
         cout<<"no con "<<endl;
         _exit(-1);
@@ -175,6 +173,52 @@ void EventLoop::SetCloseCallback(TcpConnectionCallback&&cb){
 }
 
 
+void EventLoop::wakeup(){
+    uint64_t one=1;
+    ssize_t ret=write(_evtfd,&one,sizeof(one));//写入_ectfd中的内核计数器
+    if(ret!=sizeof(uint64_t)){//检查操作是否成功
+        perror("EventLoop::wakeup is error");
+        return ;
+    }
+}
 
+void EventLoop::run(task&&cb){
+    {//使用块作用域，之所以使用块作用域是为了缩短上锁的范围（细粒度）
+        MutexLockGuard autoLock(_mut);//上锁
+        _task.push_back(move(cb));  //把任务(向用户反馈数据)存储到vector中
+    }
+
+    wakeup();//这里唤醒的其实就是EventLoop，因为这个run方法是被传递给线程池运行的
+}
+
+int EventLoop::createEventFd(){
+    int fd=eventfd(10,0);
+    if(fd<0){
+        perror("EventLoop::createEventFd error");
+        return -1;
+    }
+    return fd;
+}
+
+void EventLoop::handleRead(){
+    uint64_t opt=0;
+    ssize_t ret=read(_evtfd,&opt,sizeof(uint64_t));
+    if(ret!=sizeof(uint64_t)){
+        perror("EventLoop::handleRead error");
+        return;
+    }
+}
+
+void EventLoop::dopendingtask(){
+    vector<task>tmp;
+    {
+        MutexLockGuard guard(_mut);
+        tmp.swap(_task);//地将 _pengdings 中存储的待执行任务转移到 tmp 中，这样执行任务时不需要再持有锁，这样可以避免锁的开销，提高任务执行的效率。在无锁的状态下遍历 tmp 执行任务，可以充分利用多核处理器的并行计算能力，加快任务的执行速度。
+    }
+
+    for(auto&cb:tmp){//执行任务
+        cb();
+    }
+}
 
 

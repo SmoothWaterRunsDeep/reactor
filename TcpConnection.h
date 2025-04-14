@@ -3,7 +3,7 @@
 #include"Acceptor.h"
 #include<functional>
 #include<memory>//需要使用到智能指针托管空间
-
+#include"EventLoop.h"
 
 class SockIo;//前向声明SockIo类
 
@@ -62,5 +62,9 @@ public:
     void handleCloseCallback();
 #endif
 
-};
+private:
+    EventLoop* _ev;//TcpConnection需要能感知到EventLoop的存在
 
+public:
+    void sendLoop(const string&msg);
+};

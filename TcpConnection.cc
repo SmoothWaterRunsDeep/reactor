@@ -5,19 +5,19 @@
 using namespace std;
 
 
-TcpConnection::TcpConnection(int connfd)
+TcpConnection::TcpConnection(int connfd)//构造函数
     :_fd(connfd)
     ,_sockfd(connfd)
      ,_localaddr(getLocaladdr())
      ,_peeraddr(getPeeraddr()){}
 
-     TcpConnection::~TcpConnection(){}
+     TcpConnection::~TcpConnection(){}//析构函数
 
-     void TcpConnection::send(const string&msg){
+     void TcpConnection::send(const string&msg){//send函数
          _sockfd.writen(msg.c_str(),msg.size());
      }
 
-string TcpConnection::recv(){
+string TcpConnection::recv(){//接收函数
     char buf[655535]={0};
     _sockfd.readLine(buf,sizeof(buf));
     return string(buf);
@@ -110,7 +110,11 @@ void TcpConnection::handleCloseCallback(){
     }
 }
 
+void TcpConnection::sendLoop(const string&msg){
+    if(_ev){
+    } 
 
+}
 
 
 

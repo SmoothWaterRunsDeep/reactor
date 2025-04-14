@@ -8,11 +8,11 @@ class thread;//前向声明thread类
 
 using task=ElemType;
 
-class threadpool
+class threadPool
 {
 public:
-    threadpool(size_t,size_t);
-    ~threadpool();
+    threadPool(size_t,size_t);
+    ~threadPool();
 
     void start();
     void stop();
