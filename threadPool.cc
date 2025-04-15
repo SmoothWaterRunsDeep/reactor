@@ -1,6 +1,8 @@
 #include"threadPool.h"
 #include"thread.h"
 #include<unistd.h>
+#include<iostream>
+using namespace std;
 
 threadPool::threadPool(size_t capacity,size_t maxsize)
     :_maxsize(maxsize)
@@ -25,6 +27,7 @@ void threadPool::start(){
     for(auto &th:_threads)//引用类型不会创建新的对象，所以这样是正确的
     {
         th->start();//让所有线程都启动
+        cout<<"start successfully"<<endl;
     }
 }
 
@@ -43,6 +46,7 @@ void threadPool::stop(){
 
 void threadPool::addTask(task&&cb){//使用右值引用避免不必要的拷贝
     if(cb){
+    cout<<"this is threadPool::addTask"<<endl;
         _taskQueue.push(move(cb));
     }
 }
@@ -54,8 +58,10 @@ task threadPool::getTask(){
 
 void threadPool::doTask(){
     while(!_exit){
+        cout<<"dotask"<<endl;
         task Task=getTask();
         if(Task){
+            cout<<"Task()"<<endl;
             Task();
         }
         else{

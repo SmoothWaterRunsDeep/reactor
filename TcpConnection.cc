@@ -5,11 +5,12 @@
 using namespace std;
 
 
-TcpConnection::TcpConnection(int connfd)//构造函数
+TcpConnection::TcpConnection(int connfd,EventLoop*ev)//构造函数
     :_fd(connfd)
     ,_sockfd(connfd)
      ,_localaddr(getLocaladdr())
-     ,_peeraddr(getPeeraddr()){}
+     ,_peeraddr(getPeeraddr())
+    ,_ev(ev){}
 
      TcpConnection::~TcpConnection(){}//析构函数
 
@@ -112,6 +113,7 @@ void TcpConnection::handleCloseCallback(){
 
 void TcpConnection::sendLoop(const string&msg){
     if(_ev){
+        cout<<"sendLoop"<<endl;
         _ev->run(bind(&TcpConnection::send,this,msg));
     } 
 }

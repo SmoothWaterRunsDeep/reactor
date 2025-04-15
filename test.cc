@@ -18,6 +18,7 @@ public:
         //处理任务的逻辑
         //...
         //
+        cout<<"process"<<endl;
         _con->sendLoop(_msg);
     }
 
@@ -34,7 +35,7 @@ void onMeessage(const TcpConnectionPtr&con){
     string msg=con->recv();
     cout<<"<<recv from client:"<<msg<<endl;
     myTask task(msg,con);
-    pool->addTask(bind(&myTask::process,task)); 
+    pool->addTask(bind(&myTask::process,task));
 }
 
 void onClose(const TcpConnectionPtr&con){
@@ -42,7 +43,7 @@ void onClose(const TcpConnectionPtr&con){
 }
 
 void test(){
-    threadPool _pool(4,10);
+    threadPool _pool(10,4);
     _pool.start();
     pool=&_pool;
 

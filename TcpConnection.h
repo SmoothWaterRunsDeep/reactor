@@ -15,7 +15,7 @@ class TcpConnection
     using TcpConnectionCallback=function<void(const TcpConnectionPtr &)>;
 
 public:
-    TcpConnection(int connfd);//这里参数名填写为connfd更直观体现出对Acceptor的依赖关系
+    TcpConnection(int connfd,EventLoop*ev);//这里参数名填写为connfd更直观体现出对Acceptor的依赖关系
     ~TcpConnection();
 
     void send(const string&msg);//提供发送数据的接口

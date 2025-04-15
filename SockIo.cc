@@ -4,8 +4,12 @@
 #include<stdio.h>
 #include<sys/types.h>
 #include<sys/socket.h>
+#include<iostream>
+using namespace std;
+
+
 SockIo::SockIo(int fd)
-    :_fd(fd)
+:_fd(fd)
 {}
 
 SockIo::~SockIo(){
@@ -38,11 +42,11 @@ int SockIo::readn(char*buf,int len){
         else{//这种情况表示可以继续正常读取
             ptr+=ret;//当前读取位置前移ret个字节
             left-=ret;//剩余待读取字节数减少ret个字节
-            
+
         }
 
     }
-return len-left;
+    return len-left;
 }
 
 /*readn 函数主要用于读取指定长度的数据，不关注数据是否为字符串，因此不需要预留 '\0' 的空间；
@@ -92,6 +96,7 @@ int SockIo::writen(const char*buf,int len){
     int left=len;//这里的left表示的是剩余需要发送的字节数
     const char*ptr=buf;
     int ret=0;
+    cout<<"writen ok"<<endl;
 
     while(left>0){
         ret=write(_fd,ptr,left);
@@ -110,9 +115,8 @@ int SockIo::writen(const char*buf,int len){
             ptr+=ret;
             left-=ret;
         }
-        return len-left;
     }
-
+    return len-left;
 }
 
 

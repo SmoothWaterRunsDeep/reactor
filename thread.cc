@@ -1,4 +1,6 @@
 #include"thread.h"
+#include<iostream>
+using namespace std;
 
 thread::thread(ThreadCallback&&cb)
 :_cb(move(cb))
@@ -34,6 +36,7 @@ void* thread::threadFunc(void*arg){
     thread* pth=static_cast<thread*>(arg);
     if(pth){
         pth->_cb();
+        cout<<"threadFunc"<<endl;
     }
     else{
     perror("pth is nullptr");

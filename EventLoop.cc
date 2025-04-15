@@ -9,12 +9,14 @@ using namespace std;
 
 EventLoop::EventLoop(Acceptor&acceptor)
     :ep_fd(createfd())
+     ,_evtfd(createEventFd())
     ,isLooping(false)
     ,_evList(1024)
      ,_acceptor(acceptor)
 {
     int listenfd=_acceptor.fd();
     addEpollfd(listenfd);//初始的第一个fd应该进行监听
+    addEpollfd(_evtfd);//把eventfd放入epoll实例中监听
 }
 
 EventLoop::~EventLoop(){
@@ -88,7 +90,7 @@ void EventLoop::handleNewConnection(){
     }
 
     addEpollfd(connfd);//将connfd放入红黑树中监听是否有数据发来
-    TcpConnectionPtr con(new TcpConnection(connfd));//每当有connfd成功返回就意味着有tcp连接成功建立
+    TcpConnectionPtr con(new TcpConnection(connfd,this));//每当有connfd成功返回就意味着有tcp连接成功建立
 
     //has[connfd]=con;//如果键不存在，会先创建一个默认构造的对象，然后再进行赋值操作,会带来额外的开销。
     /*每当有连接建立就应该注册tcp的三个半事件*/
@@ -183,7 +185,9 @@ void EventLoop::SetCloseCallback(TcpConnectionCallback&&cb){
 
 void EventLoop::wakeup(){
     uint64_t one=1;
-    ssize_t ret=write(_evtfd,&one,sizeof(one));//写入_ectfd中的内核计数器
+    /* ssize_t ret=write(_evtfd,&one,sizeof(one));虽然这是个小错误，但是sizeof(one)的值是1，不注意的话还是很容易错的*/
+    ssize_t ret=write(_evtfd,&one,sizeof(uint64_t));//写入_ectfd中的内核计数器
+    cout<<"wakeup"<<endl;
     if(ret!=sizeof(uint64_t)){//检查操作是否成功
         perror("EventLoop::wakeup is error");
         return ;
@@ -195,7 +199,7 @@ void EventLoop::run(task&&cb){
         MutexLockGuard autoLock(_mut);//上锁
         _task.push_back(move(cb));  //把任务(向用户反馈数据)存储到vector中
     }
-
+    cout<<"run"<<endl;
     wakeup();//这里唤醒的其实就是EventLoop，因为这个run方法是被传递给线程池运行的
 }
 
@@ -211,6 +215,7 @@ int EventLoop::createEventFd(){
 void EventLoop::handleRead(){//把eventfd对应的内核计数器的数据读走
     uint64_t opt=0;
     ssize_t ret=read(_evtfd,&opt,sizeof(uint64_t));
+    cout<<"handleRead"<<endl;
     if(ret!=sizeof(uint64_t)){
         perror("EventLoop::handleRead error");
         return;
@@ -227,6 +232,7 @@ void EventLoop::dopendingtask(){
     for(auto&cb:tmp){//执行完vector里面的所有任务
         cb();
     }
+    cout<<"dopendingtask"<<endl;
 }
 
 
