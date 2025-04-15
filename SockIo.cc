@@ -96,7 +96,7 @@ int SockIo::writen(const char*buf,int len){
     int left=len;//这里的left表示的是剩余需要发送的字节数
     const char*ptr=buf;
     int ret=0;
-    cout<<"writen ok"<<endl;
+    /* cout<<"writen ok"<<endl; */
 
     while(left>0){
         ret=write(_fd,ptr,left);

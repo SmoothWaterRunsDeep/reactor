@@ -187,7 +187,7 @@ void EventLoop::wakeup(){
     uint64_t one=1;
     /* ssize_t ret=write(_evtfd,&one,sizeof(one));虽然这是个小错误，但是sizeof(one)的值是1，不注意的话还是很容易错的*/
     ssize_t ret=write(_evtfd,&one,sizeof(uint64_t));//写入_ectfd中的内核计数器
-    cout<<"wakeup"<<endl;
+    /* cout<<"wakeup"<<endl; */
     if(ret!=sizeof(uint64_t)){//检查操作是否成功
         perror("EventLoop::wakeup is error");
         return ;
@@ -199,7 +199,7 @@ void EventLoop::run(task&&cb){
         MutexLockGuard autoLock(_mut);//上锁
         _task.push_back(move(cb));  //把任务(向用户反馈数据)存储到vector中
     }
-    cout<<"run"<<endl;
+    /* cout<<"run"<<endl; */
     wakeup();//这里唤醒的其实就是EventLoop，因为这个run方法是被传递给线程池运行的
 }
 
@@ -215,7 +215,7 @@ int EventLoop::createEventFd(){
 void EventLoop::handleRead(){//把eventfd对应的内核计数器的数据读走
     uint64_t opt=0;
     ssize_t ret=read(_evtfd,&opt,sizeof(uint64_t));
-    cout<<"handleRead"<<endl;
+    /* cout<<"handleRead"<<endl; */
     if(ret!=sizeof(uint64_t)){
         perror("EventLoop::handleRead error");
         return;
@@ -232,7 +232,7 @@ void EventLoop::dopendingtask(){
     for(auto&cb:tmp){//执行完vector里面的所有任务
         cb();
     }
-    cout<<"dopendingtask"<<endl;
+    /* cout<<"dopendingtask"<<endl; */
 }
 
 

@@ -18,7 +18,7 @@ public:
         //处理任务的逻辑
         //...
         //
-        cout<<"process"<<endl;
+        /* cout<<"process"<<endl; */
         _con->sendLoop(_msg);
     }
 

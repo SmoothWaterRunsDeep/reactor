@@ -113,7 +113,7 @@ void TcpConnection::handleCloseCallback(){
 
 void TcpConnection::sendLoop(const string&msg){
     if(_ev){
-        cout<<"sendLoop"<<endl;
+        /* cout<<"sendLoop"<<endl; */
         _ev->run(bind(&TcpConnection::send,this,msg));
     } 
 }

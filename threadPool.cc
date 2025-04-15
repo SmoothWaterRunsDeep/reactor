@@ -27,7 +27,7 @@ void threadPool::start(){
     for(auto &th:_threads)//引用类型不会创建新的对象，所以这样是正确的
     {
         th->start();//让所有线程都启动
-        cout<<"start successfully"<<endl;
+        /* cout<<"start successfully"<<endl; */
     }
 }
 
@@ -46,22 +46,22 @@ void threadPool::stop(){
 
 void threadPool::addTask(task&&cb){//使用右值引用避免不必要的拷贝
     if(cb){
-    cout<<"this is threadPool::addTask"<<endl;
+        /* cout<<"this is threadPool::addTask"<<endl; */
         _taskQueue.push(move(cb));
     }
 }
 
 
 task threadPool::getTask(){
-    return _taskQueue.pop();
+    return _taskQueue.pop();//如果任务队列为空，线程会被阻塞
 }
 
 void threadPool::doTask(){
     while(!_exit){
-        cout<<"dotask"<<endl;
+        /* cout<<"dotask"<<endl; */
         task Task=getTask();
         if(Task){
-            cout<<"Task()"<<endl;
+            /* cout<<"Task()"<<endl; */
             Task();
         }
         else{
