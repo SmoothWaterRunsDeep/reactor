@@ -60,7 +60,7 @@ private:
     Acceptor &_acceptor;//原本_初始时创立的acceptor就是为了充当服务器的，并且获取表示监听的描述符时要用到Acceptor中的成员函数，因此创建一个Acceptor类型的对象
     map<int,TcpConnectionPtr>has;//建立起tcp连接与文件描述符的对应关系
 
-    vector<task>_task;//存储需要执行的任务
+    vector<task>_task;//存储需要执行的任务(即向客户端发送处理好的反馈数据)
     mutexLock _mut;//互斥锁，用于实现对vecor的互斥访问    
 
     //这些数据成员的作用是将外部传入的回调函数保存到 EventLoop对象中。当有新的连接建立时，EventLoop 会创建一个 TcpConnection 对象，并将这些回调函数注册到该对象中

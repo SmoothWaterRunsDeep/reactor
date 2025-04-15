@@ -8,7 +8,8 @@ threadPool::threadPool(size_t capacity,size_t maxsize)
     ,_taskQueue(capacity)
      ,_exit(false)
 {
-    _threads.resize(_maxsize);//这里不适用这句话也没关系，因为即使vector发生扩容，使用的也是unique_ptr的移动构造函数 
+    _threads.reserve(_maxsize);//这里不适用这句话也没关系，因为即使vector发生扩容，使用的也是unique_ptr的移动构造函数 
+    //但是注意如果用成resize函数那在运行的时候就会发送错误，会出现vector中前_maxsize个元素都被默认初始化为空的情况
 }
 
 threadPool::~threadPool(){}

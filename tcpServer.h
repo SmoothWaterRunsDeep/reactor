@@ -15,7 +15,7 @@ public:
                         ,TcpConnectionCallback&& cb_3);
     
 private:
-EventLoop _evLoop;
 Acceptor _acceptor;
+EventLoop _evLoop;
 };
 

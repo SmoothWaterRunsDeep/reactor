@@ -60,6 +60,14 @@ void EventLoop::waitEpoll(){
             if(fd==_acceptor.fd()){ 
                 handleNewConnection();//如果是新连接，则使用handleNewConnection方法
             }
+
+            else if(fd==_evtfd){
+                if(_evList[i].events&EPOLLIN){
+                    handleRead();
+                    dopendingtask();
+                }
+            }
+
             else{
                 if(_evList[i].events&EPOLLIN){//这个判断语句写不写都行，为了预防任何修改的发生，这里还是判断一下
                     handleMessage(fd);
@@ -200,7 +208,7 @@ int EventLoop::createEventFd(){
     return fd;
 }
 
-void EventLoop::handleRead(){
+void EventLoop::handleRead(){//把eventfd对应的内核计数器的数据读走
     uint64_t opt=0;
     ssize_t ret=read(_evtfd,&opt,sizeof(uint64_t));
     if(ret!=sizeof(uint64_t)){
@@ -213,10 +221,10 @@ void EventLoop::dopendingtask(){
     vector<task>tmp;
     {
         MutexLockGuard guard(_mut);
-        tmp.swap(_task);//地将 _pengdings 中存储的待执行任务转移到 tmp 中，这样执行任务时不需要再持有锁，这样可以避免锁的开销，提高任务执行的效率。在无锁的状态下遍历 tmp 执行任务，可以充分利用多核处理器的并行计算能力，加快任务的执行速度。
+        tmp.swap(_task);//将 _pengdings 中存储的待执行任务转移到 tmp 中，这样执行任务时不需要再持有锁，这样可以避免锁的开销，提高任务执行的效率。在无锁的状态下遍历 tmp 执行任务，可以充分利用多核处理器的并行计算能力，加快任务的执行速度。
     }
 
-    for(auto&cb:tmp){//执行任务
+    for(auto&cb:tmp){//执行完vector里面的所有任务
         cb();
     }
 }
